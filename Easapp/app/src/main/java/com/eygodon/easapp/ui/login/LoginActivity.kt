@@ -9,6 +9,7 @@ import androidx.annotation.StringRes
 import androidx.appcompat.app.AppCompatActivity
 import android.text.Editable
 import android.text.TextWatcher
+import android.util.Log
 import android.view.View
 import android.view.inputmethod.EditorInfo
 import android.widget.Button
@@ -17,15 +18,20 @@ import android.widget.ProgressBar
 import android.widget.Toast
 
 import com.eygodon.easapp.R
+import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.auth.FirebaseUser
 
 class LoginActivity : AppCompatActivity() {
 
     private lateinit var loginViewModel: LoginViewModel
+    private lateinit var auth : FirebaseAuth
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
         setContentView(R.layout.activity_login)
+
+        auth = FirebaseAuth.getInstance()
 
         val username = findViewById<EditText>(R.id.username)
         val password = findViewById<EditText>(R.id.password)
@@ -57,7 +63,7 @@ class LoginActivity : AppCompatActivity() {
                 showLoginFailed(loginResult.error)
             }
             if (loginResult.success != null) {
-                updateUiWithUser(loginResult.success)
+                createUserAccount(username.text.toString(), password.text.toString())
             }
             setResult(Activity.RESULT_OK)
 
@@ -98,21 +104,62 @@ class LoginActivity : AppCompatActivity() {
         }
     }
 
+
+    override fun onStart()
+    {
+        super.onStart()
+        val currentUser = auth.currentUser
+        if(currentUser != null) {
+            loginSuccessfulActivity()
+            finish()
+        }
+    }
     private fun loginSuccessfulActivity()
     {
         val switchIntent : Intent = Intent(this, ProfileActivity::class.java )
         startActivity(switchIntent)
     }
-    private fun updateUiWithUser(model: LoggedInUserView) {
+
+    private fun createUserAccount (mail: String, pass : String)
+    {
+               auth.createUserWithEmailAndPassword(mail, pass).addOnCompleteListener(this)
+               { task ->
+                   if (task.isSuccessful) {
+                       val user = auth.currentUser
+                       Log.d("accountCreation","account created successfully")
+                       updateUiWithUser(user)
+                   } else
+                       updateUiWithUser(null)
+               }
+    }
+
+    private fun signIn(mail : String, pass : String)
+    {
+        auth.signInWithEmailAndPassword(mail, pass).
+                addOnCompleteListener(this) {
+                    task ->
+                    if (task.isSuccessful)
+                    {
+                        val user = auth.currentUser
+                        updateUiWithUser(user)
+                    }
+                    else
+                        updateUiWithUser(null)
+                }
+    }
+    private fun updateUiWithUser(user: FirebaseUser?) {
         val welcome = getString(R.string.welcome)
-        val displayName = model.displayName
-        // TODO : initiate successful logged in experience
+        if (user == null)
+            Toast.makeText(applicationContext, "Authentication failed.", Toast.LENGTH_SHORT).show()
+        else {
+        // val displayName = model.displayName
         loginSuccessfulActivity()
         Toast.makeText(
                 applicationContext,
-                "$welcome $displayName",
+                "$welcome",
                 Toast.LENGTH_LONG
         ).show()
+        }
     }
 
     private fun showLoginFailed(@StringRes errorString: Int) {
