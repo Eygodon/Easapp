@@ -1,0 +1,39 @@
+{
+  "project_info": {
+    "project_number": "589170204993",
+    "project_id": "easapp-f6bea",
+    "storage_bucket": "easapp-f6bea.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:589170204993:android:6cb36ac6247faedf8581c0",
+        "android_client_info": {
+          "package_name": "com.eygodon.easapp"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "589170204993-8ovlsafd2chvhucr6i6se9jrc05biv4s.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCzIqJDG-1IyTo4XqlOGfmoZ1O1cZCsEC0"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "589170204993-8ovlsafd2chvhucr6i6se9jrc05biv4s.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

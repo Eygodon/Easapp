@@ -36,6 +36,7 @@ class LoginActivity : AppCompatActivity() {
         val username = findViewById<EditText>(R.id.username)
         val password = findViewById<EditText>(R.id.password)
         val login = findViewById<Button>(R.id.login)
+        val register = findViewById<Button>(R.id.register)
         val loading = findViewById<ProgressBar>(R.id.loading)
 
         loginViewModel = ViewModelProvider(this, LoginViewModelFactory())
@@ -46,6 +47,7 @@ class LoginActivity : AppCompatActivity() {
 
             // disable login button unless both username / password is valid
             login.isEnabled = loginState.isDataValid
+            register.isEnabled = loginState.isDataValid
 
             if (loginState.usernameError != null) {
                 username.error = getString(loginState.usernameError)
@@ -53,22 +55,6 @@ class LoginActivity : AppCompatActivity() {
             if (loginState.passwordError != null) {
                 password.error = getString(loginState.passwordError)
             }
-        })
-
-        loginViewModel.loginResult.observe(this@LoginActivity, Observer {
-            val loginResult = it ?: return@Observer
-
-            loading.visibility = View.GONE
-            if (loginResult.error != null) {
-                showLoginFailed(loginResult.error)
-            }
-            if (loginResult.success != null) {
-                createUserAccount(username.text.toString(), password.text.toString())
-            }
-            setResult(Activity.RESULT_OK)
-
-            //Complete and destroy login activity once successful
-            finish()
         })
 
         username.afterTextChanged {
@@ -98,8 +84,11 @@ class LoginActivity : AppCompatActivity() {
             }
 
             login.setOnClickListener {
-                loading.visibility = View.VISIBLE
-                loginViewModel.login(username.text.toString(), password.text.toString())
+                signIn(username.text.toString(), password.text.toString())
+            }
+
+            register.setOnClickListener {
+                createUserAccount(username.text.toString(), password.text.toString())
             }
         }
     }
@@ -128,8 +117,10 @@ class LoginActivity : AppCompatActivity() {
                        val user = auth.currentUser
                        Log.d("accountCreation","account created successfully")
                        updateUiWithUser(user)
-                   } else
+                   } else {
+                       Log.d("accountCreation", "error encountered")
                        updateUiWithUser(null)
+                   }
                }
     }
 
@@ -140,11 +131,14 @@ class LoginActivity : AppCompatActivity() {
                     task ->
                     if (task.isSuccessful)
                     {
+                        Log.d("connect", "Signed in successfully")
                         val user = auth.currentUser
                         updateUiWithUser(user)
                     }
-                    else
+                    else {
+                        Log.d("connect","Failure signing in")
                         updateUiWithUser(null)
+                    }
                 }
     }
     private fun updateUiWithUser(user: FirebaseUser?) {
@@ -152,13 +146,13 @@ class LoginActivity : AppCompatActivity() {
         if (user == null)
             Toast.makeText(applicationContext, "Authentication failed.", Toast.LENGTH_SHORT).show()
         else {
-        // val displayName = model.displayName
-        loginSuccessfulActivity()
-        Toast.makeText(
-                applicationContext,
-                "$welcome",
-                Toast.LENGTH_LONG
-        ).show()
+            val email = user.email
+            Toast.makeText(
+                    applicationContext,
+                    "$welcome $email",
+                    Toast.LENGTH_LONG
+                    ).show()
+            loginSuccessfulActivity()
         }
     }
 
